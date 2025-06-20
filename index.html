@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penguin Palooza: The Cosmic Waddle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&family=Bungee&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f0f0f0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #ff6f61;
+            --accent-hover: #ff3d2e;
+            --transition-speed: 0.4s;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1f1f1f;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-color: #ff8a80;
+            --accent-hover: #ff5c50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background var(--transition-speed), color var(--transition-speed);
+            position: relative;
+        }
+
+        canvas#particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--bg-secondary);
+            padding: 20px 10vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transform: perspective(1000px) rotateX(0deg);
+            transition: all var(--transition-speed);
+        }
+
+        .navbar:hover {
+            transform: perspective(1000px) rotateX(5deg);
+        }
+
+        .logo img {
+            height: 60px;
+            transition: transform 0.6s ease;
+        }
+
+        .logo img:hover {
+            transform: rotateY(360deg) scale(1.2);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin: 0 25px;
+            position: relative;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-family: 'Bungee', cursive;
+            font-size: 1.1rem;
+            transition: color var(--transition-speed), transform var(--transition-speed);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+            transform: translateY(-5px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: var(--accent-color);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 28px;
+            color: var(--text-primary);
+            transition: transform var(--transition-speed);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(360deg);
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 28px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background: url('https://images.unsplash.com/photo-1517191434949-5e90cd5d2990') no-repeat center/cover;
+            color: #fff;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
+            z-index: 0;
+        }
+
+        .hero h1, .hero p {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-family: 'Bungee', cursive;
+            animation: bounceIn 1.5s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            max-width: 700px;
+            animation: fadeIn 2s ease-out 0.5s;
+            animation-fill-mode: both;
+        }
+
+        .section {
+            padding: 80px 10vw;
+            text-align: center;
+            position: relative;
+        }
+
+        .section h2 {
+            font-size: 3rem;
+            font-family: 'Bungee', cursive;
+            margin-bottom: 30px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            animation: slideIn 1s ease-out;
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            max-width: 900px;
+            margin: 0 auto 30px;
+        }
+
+        .penguin-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            transition: transform 0.5s, box-shadow 0.5s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .penguin-img:hover {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-container {
+            max-width: 900px;
+            margin: 30px auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 500px;
+            transition: transform 0.5s;
+        }
+
+        .video-container:hover iframe {
+            transform: scale(1.05);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .gallery img {
+            width: 100%;
+            border-radius: 10px;
+            transition: transform 0.5s, opacity 0.5s;
+            opacity: 0.9;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        .footer {
+            background: var(--bg-secondary);
+            padding: 50px 10vw;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-icons a {
+            color: var(--text-primary);
+            font-size: 30px;
+            margin: 0 20px;
+            transition: color var(--transition-speed), transform 0.5s;
+            display: inline-block;
+        }
+
+        .social-icons a:hover {
+            color: var(--accent-hover);
+            transform: translateY(-10px) rotate(360deg);
+        }
+
+        .footer p {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateX(-100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes waddle {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(20px) rotate(5deg); }
+            50% { transform: translateX(0) rotate(0deg); }
+            75% { transform: translateX(-20px) rotate(-5deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+
+        .waddle {
+            animation: waddle 3s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 15px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                display: none;
+                width: 100%;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                margin: 15px 0;
+            }
+
+            .hamburger {
+                display: block;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+
+            .video-container iframe {
+                height: 300px;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+
+            .video-container iframe {
+                height: 200px;
+            }
+
+            .social-icons a {
+                font-size: 24px;
+                margin: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://placehold.co/60x60/png?text=Penguin+Logo" alt="Penguin Palooza Logo">
+        </div>
+        <button class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+        <ul class="nav-links">
+            <li><a href="#loneliness">Loneliness Vibes</a></li>
+            <li><a href="#penguin-life">Penguin Life</a></li>
+            <li><a href="#behavior">Waddle Shenanigans</a></li>
+            <li><a href="#gallery">Penguin Pics</a></li>
+            <li><a href="#video">Epic Waddle Video</a></li>
+        </ul>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-moon"></i>
+        </button>
+    </nav>
+
+    <section class="hero">
+        <h1 class="waddle">Penguin Palooza: The Cosmic Waddle</h1>
+        <p>Ever feel like a lone penguin sliding through the cosmic ice of life? Join us on a wild, waddling adventure through loneliness and penguin awesomeness!</p>
+    </section>
+
+    <section id="loneliness" class="section">
+        <h2>Loneliness: The Solo Slide on Life’s Iceberg</h2>
+        <p>Picture this: you’re a penguin, chilling (literally) on a massive iceberg, sipping a fish smoothie, and wondering why nobody showed up to your ice party. Loneliness is like that—cold, quiet, but kinda poetic. Humans and penguins alike feel it, but here’s the kicker: sometimes, you just gotta waddle through it with style!</p>
+        <img class="penguin-img" src="https://images.unsplash.com/photo-1572630665702-7b24d6582b0f" alt="Lonely Penguin on Iceberg">
+    </section>
+
+    <section id="penguin-life" class="section">
+        <h2>Penguin Life: Sliding Through the Arctic Soap Opera</h2>
+        <p>Penguins live in a world of ice, fish, and drama. They belly-slide like nobody’s watching, dive for snacks, and huddle together like they’re plotting the next big heist. But even these social birds have their “I’m done with everyone” days, staring at the horizon like it’s a Netflix cliffhanger.</p>
+        <img class="penguin-img waddle" src="https://images.unsplash.com/photo-1590086782792-42dd3753141c" alt="Penguin Sliding">
+    </section>
+
+    <section id="behavior" class="section">
+        <h2>Waddle Shenanigans: Penguins Being Extra</h2>
+        <p>Penguins are the ultimate chaos agents. They waddle like they’re auditioning for a comedy show, flirt by gifting pebbles (smooth move, buddy), and dive like they’re in a Hollywood action flick. But sometimes, they just stand there, staring into the void, probably overanalyzing their life choices. Relatable, right?</p>
+        <img class="penguin-img" src="https://images.unsplash.com/photo-1565123409695-7f58f3d6f1e9" alt="Penguin Thinking">
+    </section>
+
+    <section id="gallery" class="section">
+        <h2>Penguin Pics: A Waddle-tastic Gallery</h2>
+        <p>Feast your eyes on these adorable weirdos! From epic slides to existential stares, these penguins are living their best (and sometimes loneliest) lives.</p>
+        <div class="gallery">
+            <img src="https://images.unsplash.com/photo-1519717227458-9d5b9e5e9c31" alt="Penguin Group">
+            <img src="https://images.unsplash.com/photo-1543242594-832f5b1b1d4c" alt="Penguin Waddle">
+            <img src="https://images.unsplash.com/photo-1506665536681-ce3e357a51d7" alt="Penguin Dive">
+        </div>
+    </section>
+
+    <section id="video" class="section">
+        <h2>Epic Waddle Video: Penguin Chaos Unleashed</h2>
+        <p>Watch these penguins waddle, slide, and steal the show in this hilarious video. It’s like a reality TV show, but with more flippers and zero drama queens!</p>
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/8g5J8E6QJuQ" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>Join the Penguin Palooza community for more icy adventures!</p>
+        <div class="social-icons">
+            <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+            <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+            <a href="https://tiktok.com" target="_blank"><i class="fab fa-tiktok"></i></a>
+        </div>
+        <p>© 2025 Penguin Palooza. Waddle on, friends!</p>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle i');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeToggle.classList.remove('fa-sun');
+                themeToggle.classList.add('fa-moon');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.classList.remove('fa-moon');
+                themeToggle.classList.add('fa-sun');
+            }
+            localStorage.setItem('theme', body.getAttribute('data-theme') || 'light');
+        }
+
+        // Hamburger Menu
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+
+        // Particle Animation
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const particleCount = 100;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.size > 0.2) this.size -= 0.01;
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 111, 97, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.size <= 0.2) {
+                    particles.splice(index, 1);
+                    particles.push(new Particle());
+                }
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+                if (window.innerWidth <= 768) {
+                    document.querySelector('.nav-links').classList.remove('active');
+                }
+            });
+        });
+
+        // Load Theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle i').classList.remove('fa-moon');
+                document.querySelector('.theme-toggle i').classList.add('fa-sun');
+            }
+        });
+    </script>
+</body>
+</html>
